@@ -200,7 +200,7 @@ function scan {
 	# IFS=' "'
 	# IFS=$oIFS
 	echo -n > "$output"
-	typeset _nwids _args _nwid
+	typeset _nwids _args _nwid _signal
 
 	! $quiet && echo "Performing wireless scan..."
 	# Parse ifconfig nwid output for sorting
@@ -266,7 +266,10 @@ function scan {
 		# MAC
 		echo -n "|$4" >> $output
 		# Signal quality
-		printf "|%02d" ${5%dBm} >> $output
+		_signal=${5%dBm} # Remove dBm suffix
+		_signal=${_signal%\%} # Remove % suffix
+		_signal=${_signal#-} # Make signal always positive
+		printf "|%02d" ${_signal} >> $output
 		# Speed
 		echo -n "|$6" >> $output
 		# Options
@@ -379,7 +382,7 @@ function menu {
 	echo
 	for _i in ${index[@]}; do
 		printf "%3d) %-40s %-6s %-10s\n" \
-			$_i "${nwid[$_i]}" "${db[$_i]}dB" "${access[$_i]}"
+			$_i "${nwid[$_i]}" "${db[$_i]}" "${access[$_i]}"
 	done
 	echo
 	read choice?"Enter the number of the network to connect to (or r to rescan or q to quit): "
